@@ -232,6 +232,19 @@ class Driver {
             MemberNameResolver.resolveNames(dcCommonState, types);
         }
         /*
+         * Enums are renamed during their own analysis, so analyse them first - otherwise referrers
+         * dumped earlier won't see the renamed constants.
+         */
+        if (options.getOption(OptionsImpl.RENAME_ENUM_MEMBERS)) {
+            for (JavaTypeInstance type : types) {
+                try {
+                    dcCommonState.getClassFile(type).ensureEnumMembersResolved(dcCommonState);
+                } catch (CannotLoadClassException ignore) {
+                } catch (RuntimeException ignore) {
+                }
+            }
+        }
+        /*
          * If we're working on a case insensitive file system (OH COME ON!) then make sure that
          * we don't have any collisions.
          */

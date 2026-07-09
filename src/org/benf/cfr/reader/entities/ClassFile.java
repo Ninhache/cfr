@@ -934,6 +934,15 @@ public class ClassFile implements Dumpable, TypeUsageCollectable {
         }
     }
 
+    /*
+     * Enum member renaming happens during analysis - force it early so referrers see the renamed
+     * constants regardless of dump order.  analyseMid is idempotent.
+     */
+    public void ensureEnumMembersResolved(DCCommonState dcCommonState) {
+        if (!testAccessFlag(AccessFlag.ACC_ENUM)) return;
+        analyseMid(dcCommonState);
+    }
+
     public void analyseTop(final DCCommonState dcCommonState, final TypeUsageCollectingDumper typeUsageCollectingDumper) {
         analyseMid(dcCommonState);
         analysePassOuterFirst(new UnaryProcedure<ClassFile>() {
