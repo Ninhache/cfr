@@ -226,6 +226,13 @@ public class Field implements KnowsRawSize, TypeUsageCollectable {
         }
     }
 
+    /*
+     * Declaration annotations on this field (RuntimeVisible + RuntimeInvisible), for name recovery.
+     */
+    public List<AnnotationTableEntry> getAnnotationEntries() {
+        return MiscAnnotations.BasicAnnotations(attributes);
+    }
+
     public void dump(Dumper d, String name, ClassFile owner, boolean asRecordField) {
         JavaTypeInstance type = getJavaTypeInstance();
 

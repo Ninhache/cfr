@@ -565,6 +565,15 @@ public class ClassFile implements Dumpable, TypeUsageCollectable {
         return field;
     }
 
+    private void addFieldByName(String name, JavaTypeInstance fieldType, ClassFileField field) {
+        Map<JavaTypeInstance, ClassFileField> perNameMap = fieldsByName.get(name);
+        if (perNameMap == null) {
+            perNameMap = MapFactory.newOrderedMap();
+            fieldsByName.put(name, perNameMap);
+        }
+        perNameMap.put(fieldType, field);
+    }
+
     private void calculateFieldsByName() {
         Options options = constantPool.getDCCommonState().getOptions();
         boolean testIllegal = !options.getOption(OptionsImpl.RENAME_ILLEGAL_IDENTS);
@@ -585,12 +594,7 @@ public class ClassFile implements Dumpable, TypeUsageCollectable {
         for (ClassFileField field : fields) {
             String fieldName = field.getFieldName();
             JavaTypeInstance fieldType = field.getField().getJavaTypeInstance();
-            Map<JavaTypeInstance, ClassFileField> perNameMap = fieldsByName.get(fieldName);
-            if (perNameMap == null) {
-                perNameMap = MapFactory.newOrderedMap();
-                fieldsByName.put(fieldName, perNameMap);
-            }
-            perNameMap.put(fieldType, field);
+            addFieldByName(fieldName, fieldType, field);
             if (renameSmallMembers && fieldName.length() <= smallMemberThreshold) {
                 field.getField().setDisambiguate();
             }
@@ -609,6 +613,16 @@ public class ClassFile implements Dumpable, TypeUsageCollectable {
         }
         if (warnAmbig) {
             addComment(DecompilerComment.RENAME_MEMBERS);
+        }
+        // Field references from bytecode resolve by the raw (pre-rename) name.  If a field has been
+        // renamed (enum / annotation member renaming), also index it under its raw name so referents
+        // resolve it - but never shadow a real field that already uses that name, and do this after
+        // duplicate detection so these aliases can't trigger spurious disambiguation.
+        for (ClassFileField field : fields) {
+            String rawFieldName = field.getRawFieldName();
+            if (!rawFieldName.equals(field.getFieldName()) && !fieldsByName.containsKey(rawFieldName)) {
+                addFieldByName(rawFieldName, field.getField().getJavaTypeInstance(), field);
+            }
         }
         if (illegal) {
             addComment(DecompilerComment.ILLEGAL_IDENTIFIERS);
