@@ -520,6 +520,9 @@ public class OptionsImpl implements Options {
     public static final PermittedOptionProvider.Argument<Boolean> RENAME_ENUM_MEMBERS = register(new PermittedOptionProvider.Argument<Boolean>(
             "renameenumidents", new DefaultChainBooleanDecoder(RENAME_MEMBERS, false),
             "Rename ENUM identifiers which do not match their 'expected' string names.  Note - this WILL break reflection based access, so is not automatically enabled."));
+    public static final PermittedOptionProvider.Argument<Boolean> RENAME_ANNOTATION_MEMBERS = register(new PermittedOptionProvider.Argument<Boolean>(
+            "renameannotationidents", new DefaultChainBooleanDecoder(RENAME_MEMBERS, false),
+            "Rename fields to the name carried by a @SerializedName / @XmlElement / @XmlAttribute annotation.  Note - this WILL break reflection based access, so is not automatically enabled."));
     public static final PermittedOptionProvider.Argument<Troolean> REMOVE_DEAD_CONDITIONALS = register(new PermittedOptionProvider.Argument<Troolean>(
             "removedeadconditionals", defaultNeitherTrooleanDecoder,
             "Remove code that can't be executed."));

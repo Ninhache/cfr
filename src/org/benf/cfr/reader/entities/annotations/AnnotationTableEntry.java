@@ -32,6 +32,10 @@ public class AnnotationTableEntry implements TypeUsageCollectable {
         return clazz;
     }
 
+    public ElementValue getElementValue(String key) {
+        return elementValueMap == null ? null : elementValueMap.get(key);
+    }
+
     public Dumper dump(Dumper d) {
         d.print('@').dump(clazz);
         if (elementValueMap != null && !elementValueMap.isEmpty()) {

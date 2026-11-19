@@ -1,6 +1,7 @@
 package org.benf.cfr.reader.entities.annotations;
 
 import org.benf.cfr.reader.bytecode.analysis.parse.literal.TypedLiteral;
+import org.benf.cfr.reader.bytecode.analysis.parse.utils.QuotingUtils;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaTypeInstance;
 import org.benf.cfr.reader.bytecode.analysis.types.RawJavaType;
 import org.benf.cfr.reader.state.TypeUsageCollector;
@@ -11,6 +12,17 @@ public class ElementValueConst implements ElementValue {
 
     public ElementValueConst(TypedLiteral value) {
         this.value = value;
+    }
+
+    /*
+     * The unquoted string value, if this is a string constant - else null.  (String literals are stored enquoted.)
+     */
+    public String getStringValue() {
+        Object v = value.getValue();
+        if (v instanceof String) {
+            return QuotingUtils.unquoteString((String) v);
+        }
+        return null;
     }
 
     @Override

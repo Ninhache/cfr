@@ -6,6 +6,7 @@ import org.benf.cfr.reader.entities.ClassFile;
 import org.benf.cfr.reader.entities.Method;
 import org.benf.cfr.reader.mapping.MappingFactory;
 import org.benf.cfr.reader.mapping.ObfuscationMapping;
+import org.benf.cfr.reader.relationship.AnnotationMemberResolver;
 import org.benf.cfr.reader.relationship.MemberNameResolver;
 import org.benf.cfr.reader.state.DCCommonState;
 import org.benf.cfr.reader.state.TypeUsageCollectingDumper;
@@ -78,6 +79,18 @@ class Driver {
             }
             if (options.getOption(OptionsImpl.RENAME_DUP_MEMBERS)) {
                 MemberNameResolver.resolveNames(dcCommonState, ListFactory.newList(dcCommonState.getClassCache().getLoadedTypes()));
+            }
+            if (options.getOption(OptionsImpl.RENAME_ENUM_MEMBERS)) {
+                for (JavaTypeInstance type : ListFactory.newList(dcCommonState.getClassCache().getLoadedTypes())) {
+                    try {
+                        dcCommonState.getClassFile(type).ensureEnumMembersResolved(dcCommonState);
+                    } catch (CannotLoadClassException ignore) {
+                    } catch (RuntimeException ignore) {
+                    }
+                }
+            }
+            if (options.getOption(OptionsImpl.RENAME_ANNOTATION_MEMBERS)) {
+                AnnotationMemberResolver.resolveNames(dcCommonState, ListFactory.newList(dcCommonState.getClassCache().getLoadedTypes()));
             }
 
             TypeUsageCollectingDumper collectingDumper = new TypeUsageCollectingDumper(options, c);
@@ -243,6 +256,12 @@ class Driver {
                 } catch (RuntimeException ignore) {
                 }
             }
+        }
+        /*
+         * Recover field names from serialization annotations before dumping, so referrers see them too.
+         */
+        if (options.getOption(OptionsImpl.RENAME_ANNOTATION_MEMBERS)) {
+            AnnotationMemberResolver.resolveNames(dcCommonState, types);
         }
         /*
          * If we're working on a case insensitive file system (OH COME ON!) then make sure that
